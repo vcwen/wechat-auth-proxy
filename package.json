@@ -1,0 +1,29 @@
+{
+  "name": "wechat-auth-proxy",
+  "version": "0.0.1",
+  "description": "wechat oauth proxy",
+  "main": "index.js",
+  "scripts": {
+    "test": "istanbul cover _mocha -- -R spec 'test/**/*.spec.js'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wenwei1202/wechat-auth-proxy.git"
+  },
+  "author": "vincent wen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wenwei1202/wechat-auth-proxy/issues"
+  },
+  "homepage": "https://github.com/wenwei1202/wechat-auth-proxy#readme",
+  "dependencies": {
+    "async": "^2.3.0",
+    "wechat-oauth": "^1.2.1"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.2.0",
+    "proxyquire": "^1.7.11"
+  }
+}
