@@ -17,13 +17,12 @@
   },
   "homepage": "https://github.com/wenwei1202/wechat-auth-proxy#readme",
   "dependencies": {
-    "async": "^2.3.0",
-    "wechat-oauth": "^1.2.1"
+    "co-wechat-oauth": "^2.0.1"
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "istanbul": "^0.4.5",
-    "mocha": "^3.2.0",
+    "istanbul": "^1.1.0-alpha.1",
+    "mocha": "^3.4.2",
     "proxyquire": "^1.7.11"
   }
 }

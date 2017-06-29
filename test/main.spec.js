@@ -5,8 +5,8 @@ class WechatOAuth {
   getAuthorizeURL() {
     return 'https://open.weixin.qq.com/connect/oauth2/authorize?appId=appId&redirect_uri=http%3A%2F%2Ftest.com%2Fcallback&response_type=code&scope=snsapi_userinfo&state=proxy#wechat_redirect'
   }
-  getAccessToken(code, callback) {
-    if(code === 'err') return callback(new Error('getAccessToken error'))
+  async getAccessToken(code) {
+    if(code === 'err') throw new Error('getAccessToken error')
     let scope = 'snsapi_base'
     if (code === 'userinfo') {
       scope = 'snsapi_userinfo'
@@ -23,13 +23,11 @@ class WechatOAuth {
       openid,
       scope
     }
-    callback(null, {
-      data: res
-    })
+    return {data: res}
   }
-  getUser(options, callback) {
-    if(options.openid === 'user_err') return callback(new Error('user info error'))
-    const res = {
+  async getUser(options) {
+    if(options.openid === 'user_err') trhow (new Error('user info error'))
+    const user = {
       openid: 'OPENID',
       nickname: 'NICKNAME',
       sex: 1,
@@ -40,14 +38,12 @@ class WechatOAuth {
       privilege: ['PRIVILEGE1', 'PRIVILEGE2'],
       unionid: 'o6_bmasdasdsad6_2sgVt7hMZOPfL'
     }
-    callback(null, {
-      data: res
-    })
+    return user
   }
 
 }
 const WechatAuthProxy = proxyquire('../main', {
-  'wechat-oauth': WechatOAuth
+  'co-wechat-oauth': WechatOAuth
 })
 
 describe('WechatAuthProxy', function () {
@@ -64,7 +60,7 @@ describe('WechatAuthProxy', function () {
 
 
   describe('#auth()', function () {
-    const proxy = new WechatAuthProxy('appId', 'appSecret', 'http://test.com/callback', (cb) => cb(null, ['other.com']))
+    const proxy = new WechatAuthProxy('appId', 'appSecret', undefined, undefined, {allowedHosts:['other.com']})
 
     it('should reply 400 "Invalid appId." when appId is invalid', function (done) {
       const req = {
@@ -85,7 +81,7 @@ describe('WechatAuthProxy', function () {
       proxy.auth(req, res)
     })
 
-    it('should reply 400 "Invalid appId." when appId is invalid', function (done) {
+    it('should reply 400 "Invliad redirect URI." when redirect URI is allowed', function (done) {
       const req = {
         query: {
           appId: 'appId',
@@ -158,7 +154,7 @@ describe('WechatAuthProxy', function () {
   })
 
   describe('#callback()', function () {
-    const proxy = new WechatAuthProxy('appId', 'appSecret', 'http://test.com/callback', (cb) => cb(null, ['other.com']))
+    const proxy = new WechatAuthProxy('appId', 'appSecret', null, null, {allowedHosts: ['other.com']})
 
     it('should reply redirect to failureRedirect url when code is not available or invalid', function (done) {
       const req = {
