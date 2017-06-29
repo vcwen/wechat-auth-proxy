@@ -63,57 +63,47 @@ describe('WechatAuthProxy', function () {
     const proxy = new WechatAuthProxy('appId', 'appSecret', undefined, undefined, {allowedHosts:['other.com']})
 
     it('should reply 400 "Invalid appId." when appId is invalid', function (done) {
-      const req = {
+      const ctx = {
         query: {
           appId: '123'
-        }
-      }
-      const res = {
-        status(statusCode) {
-          expect(statusCode).to.equal(400)
-          return this
         },
-        send(content) {
-          expect(content).to.equal('Invalid appId.')
+        throw(statusCode, msg) {
+          expect(statusCode).to.equal(400)
+          expect(msg).to.equal('Invalid appId.')
           done()
         }
       }
-      proxy.auth(req, res)
+      proxy.auth(ctx)
     })
 
     it('should reply 400 "Invliad redirect URI." when redirect URI is allowed', function (done) {
-      const req = {
+      const ctx = {
         query: {
           appId: 'appId',
           redirectUri: 'http://taobao.com/callback'
-        }
-      }
-      const res = {
-        status(statusCode) {
-          expect(statusCode).to.equal(400)
-          return this
         },
-        send(content) {
-          expect(content).to.equal('Invliad redirect URI.')
+        throw(statusCode, msg) {
+          expect(statusCode).to.equal(400)
+          expect(msg).to.equal('Invliad redirect URI.')
           done()
         }
       }
-      proxy.auth(req, res)
+      proxy.auth(ctx)
     })
 
     it('should redirect to wechat authorize URI', function (done) {
-      const req = {
+      const ctx = {
         query: {
           appId: 'appId',
           redirectUri: 'http://other.com/callback',
           scope: 'snsapi_userinfo',
           state: 'proxy'
         },
-        session: {}
-      }
-      const res = {
-        redirect(statusCode, url) {
+        session: {},
+        set status(statusCode) {
           expect(statusCode).to.equal(302)
+        },
+        redirect(url) {
           let authUrl = 'https://open.weixin.qq.com/connect/oauth2/authorize'
           const info = {
             appId: 'appId',
@@ -128,11 +118,11 @@ describe('WechatAuthProxy', function () {
           done()
         }
       }
-      proxy.auth(req, res)
+      proxy.auth(ctx)
     })
 
     it('should store redirect uri to session', function (done) {
-      const req = {
+      const ctx = {
         query: {
           appId: 'appId',
           redirectUri: 'http://other.com/callback',
@@ -140,16 +130,14 @@ describe('WechatAuthProxy', function () {
           state: 'proxy',
           failureRedirect: 'http://other.com/callback/failure'
         },
-        session: {}
-      }
-      const res = {
+        session: {},
         redirect() {
-          expect(req.session.successRedirect).to.equal('http://other.com/callback')
-          expect(req.session.failureRedirect).to.equal('http://other.com/callback/failure')
+          expect(ctx.session.successRedirect).to.equal('http://other.com/callback')
+          expect(ctx.session.failureRedirect).to.equal('http://other.com/callback/failure')
           done()
         }
       }
-      proxy.auth(req, res)
+      proxy.auth(ctx)
     })
   })
 
@@ -157,26 +145,26 @@ describe('WechatAuthProxy', function () {
     const proxy = new WechatAuthProxy('appId', 'appSecret', null, null, {allowedHosts: ['other.com']})
 
     it('should reply redirect to failureRedirect url when code is not available or invalid', function (done) {
-      const req = {
+      const ctx = {
         query: {
           appId: '123'
         },
         session: {
           failureRedirect: 'http://other.com/failure'
-        }
-      }
-      const res = {
-        redirect(statusCode, url) {
+        },
+        set status(statusCode) {
           expect(statusCode).to.equal(301)
+        },
+        redirect(url) {
           expect(url).to.equal('http://other.com/failure')
           done()
         }
       }
-      proxy.callback(req, res)
+      proxy.callback(ctx)
     })
 
     it('should redirect to successRedirect url with openId when scope is "snsapi_base"', function (done) {
-      const req = {
+      const ctx = {
         query: {
           appId: 'appId',
           redirectUri: 'http://other.com/callback',
@@ -184,11 +172,11 @@ describe('WechatAuthProxy', function () {
         },
         session: {
           successRedirect: 'http://other.com/callback'
-        }
-      }
-      const res = {
-        redirect(statusCode, url) {
+        },
+        set status(statusCode) {
           expect(statusCode).to.equal(301)
+        },
+        redirect(url) {
           expect(url).to.equal('http://other.com/callback?' + qs.stringify({
             openid: 'OPENID',
             scope: 'snsapi_base'
@@ -196,11 +184,11 @@ describe('WechatAuthProxy', function () {
           done()
         }
       }
-      proxy.callback(req, res)
+      proxy.callback(ctx)
     })
 
     it('should redirect to successRedirect url with user info when scope is "snsapi_userinfo"', function (done) {
-      const req = {
+      const ctx = {
         query: {
           appId: 'appId',
           redirectUri: 'http://other.com/callback',
@@ -208,11 +196,11 @@ describe('WechatAuthProxy', function () {
         },
         session: {
           successRedirect: 'http://other.com/callback'
-        }
-      }
-      const res = {
-        redirect(statusCode, url) {
+        },
+        set status(statusCode) {
           expect(statusCode).to.equal(301)
+        },
+        redirect(url) {
           const info = {
             openid: 'OPENID',
             nickname: 'NICKNAME',
@@ -228,43 +216,45 @@ describe('WechatAuthProxy', function () {
           done()
         }
       }
-      proxy.callback(req, res)
+      proxy.callback(ctx)
     })
 
     it('should redirect to failureRedirect url when getAccessToken callback with an error', function (done) {
-      const req = {
+      const ctx = {
         query: {
           code: 'err'
         },
         session: {
           failureRedirect: 'http://other.com/callback/failure',
-        }
-      }
-      const res = {
-        redirect(statusCode , url) {
+        },
+        set status(statusCode) {
+          expect(statusCode).to.equal(301)
+        },
+        redirect(url) {
           expect(url).to.equal('http://other.com/callback/failure')
           done()
         }
       }
-      proxy.callback(req, res)
+      proxy.callback(ctx)
     })
 
     it('should redirect to failureRedirect url when getUser callback with an error', function (done) {
-      const req = {
+      const ctx = {
         query: {
           code: 'user_err'
         },
         session: {
           failureRedirect: 'http://other.com/callback/failure'
-        }
-      }
-      const res = {
-        redirect(statusCode , url) {
+        },
+        set status(statusCode) {
+          expect(statusCode).to.equal(301)
+        },
+        redirect(url) {
           expect(url).to.equal('http://other.com/callback/failure')
           done()
         }
       }
-      proxy.callback(req, res)
+      proxy.callback(ctx)
     })
   })
 })

@@ -27,13 +27,13 @@ class WechatAuthProxy {
     this._oauth = new WechatOAuth(appId, appSecret, getAccessToken, saveAccessToken)
   }
   middlewarify(){
-    return (req, res, next) => {
-      if(req.method === 'GET') {
-        switch(req.path) {
+    return async (ctx, next) => {
+      if(ctx.method === 'GET') {
+        switch(ctx.path) {
           case '/wechatauth':
-            return this.auth(req, res)
+            return this.auth(ctx)
           case '/wechatauth/callback':
-            return this.callback(req, res)
+            return this.callback(ctx)
           default:
             next()
         }
@@ -42,10 +42,10 @@ class WechatAuthProxy {
       }
     }
   }
-  async auth(req, res) {
-    const query = req.query
+  async auth(ctx) {
+    const query = ctx.query
     if (query.appId !== this._appId) {
-      return res.status(400).send('Invalid appId.')
+      return ctx.throw(400, 'Invalid appId.')
     }
     const successRedirect = query.successRedirect || query.redirectUri
     const failureRedirect = query.failureRedirect || successRedirect
@@ -53,25 +53,26 @@ class WechatAuthProxy {
     try {
       allowed = await this._isRedirectUriAllowed(successRedirect, failureRedirect)
     } catch(err) {
-      return res.status(500).send(err)
+      return ctx.throw(500, err.message)
     }
     if (!allowed) {
-      res.status(400).send('Invliad redirect URI.')
+      ctx.throw(400, 'Invliad redirect URI.')
     } else {
       const scope = query.scope || 'snsapi_base'
       const state = query.state || 'proxy'
-      req.session.successRedirect = successRedirect
-      req.session.failureRedirect = failureRedirect
-      req.session.lang = query.lang || 'zh_CN'
-      res.redirect(302, this._oauth.getAuthorizeURL(this._callbackUrl, state, scope))
+      ctx.session.successRedirect = successRedirect
+      ctx.session.failureRedirect = failureRedirect
+      ctx.session.lang = query.lang || 'zh_CN'
+      ctx.redirect(this._oauth.getAuthorizeURL(this._callbackUrl, state, scope))
     }
   }
-  async callback(req, res) {
-    if (!req.query.code || req.query.code === 'authdeny') {
-      return res.redirect(301, req.session.failureRedirect)
+  async callback(ctx) {
+    if (!ctx.query.code || ctx.query.code === 'authdeny') {
+      ctx.status = 301
+      return ctx.redirect(ctx.session.failureRedirect)
     }
     try {
-      const accessToken = await this._oauth.getAccessToken(req.query.code)
+      const accessToken = await this._oauth.getAccessToken(ctx.query.code)
       const data = accessToken.data
       const openId = data.openid
       if (data.scope === 'snsapi_base') {
@@ -79,20 +80,23 @@ class WechatAuthProxy {
           openid: openId,
           scope: data.scope
         }
-        res.redirect(301, req.session.successRedirect + '?' + qs.stringify(profile))
+        ctx.status = 301
+        ctx.redirect(ctx.session.successRedirect + '?' + qs.stringify(profile))
       } else {
-        const lang = req.session.lang
+        const lang = ctx.session.lang
         const options = {
           openid: openId,
           lang: lang
         }
         const user = await this._oauth.getUser(options)
         debug('retrieved user profile: %j', user)
-        res.redirect(301, req.session.successRedirect + '?' + qs.stringify(user))
+        ctx.status = 301
+        ctx.redirect(ctx.session.successRedirect + '?' + qs.stringify(user))
       }
 
     } catch (err) {
-      return res.redirect(301, req.session.failureRedirect)
+      ctx.status = 301
+      return ctx.redirect(ctx.session.failureRedirect)
     }
   }
   async _isRedirectUriAllowed(...uris) {
