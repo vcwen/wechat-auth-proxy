@@ -1,8 +1,10 @@
 const url = require('url')
+const path = require('path')
 const qs = require('querystring')
 const WechatOAuth = require('co-wechat-oauth')
 const debug = require('debug')('proxy')
 const assert = require('assert')
+const _ = require('lodash')
 
 class WechatAuthProxy {
   constructor(appId, appSecret, getAccessToken, saveAccessToken, options = {}) {
@@ -15,24 +17,24 @@ class WechatAuthProxy {
         return options.allowedHosts
       }
     }
-
-    this._prefix = options.prefix || ''
     if(options.getAllowedHosts) {
       this._getAllowedHosts = options.getAllowedHosts
     }
     if(!this._getAllowedHosts) {
       this._getAllowedHosts =  async () => []
     }
-    this._callbackUrl = this._prefix + '/wechatauth/callback'
+    const prefix = options.prefix ? options.prefix : ''
+    this._authUrl = path.join('/', prefix, '/wechatauth')
+    this._callbackUrl = path.join('/', prefix, '/wechatauth/callback')
     this._oauth = new WechatOAuth(appId, appSecret, getAccessToken, saveAccessToken)
   }
   middlewarify(){
     return async (ctx, next) => {
       if(ctx.method === 'GET') {
         switch(ctx.path) {
-          case '/wechatauth':
+          case this._authUrl:
             return this.auth(ctx)
-          case '/wechatauth/callback':
+          case this._callbackUrl:
             return this.callback(ctx)
           default:
             next()
@@ -53,6 +55,7 @@ class WechatAuthProxy {
     try {
       allowed = await this._isRedirectUriAllowed(successRedirect, failureRedirect)
     } catch(err) {
+      console.log(err)
       return ctx.throw(500, err.message)
     }
     if (!allowed) {
@@ -63,7 +66,7 @@ class WechatAuthProxy {
       ctx.session.successRedirect = successRedirect
       ctx.session.failureRedirect = failureRedirect
       ctx.session.lang = query.lang || 'zh_CN'
-      ctx.redirect(this._oauth.getAuthorizeURL(this._callbackUrl, state, scope))
+      ctx.redirect(this._oauth.getAuthorizeURL(url.resolve(ctx.href, this._callbackUrl), state, scope))
     }
   }
   async callback(ctx) {

@@ -26,7 +26,7 @@ class WechatOAuth {
     return {data: res}
   }
   async getUser(options) {
-    if(options.openid === 'user_err') trhow (new Error('user info error'))
+    if(options.openid === 'user_err') return (new Error('user info error'))
     const user = {
       openid: 'OPENID',
       nickname: 'NICKNAME',
@@ -49,12 +49,12 @@ const WechatAuthProxy = proxyquire('../main', {
 describe('WechatAuthProxy', function () {
   describe('#constructor()', function () {
     it('should be able to create via constructor', function () {
-      const proxy = new WechatAuthProxy('appId', 'appSecret', 'http://test.com/callback', (cb) => cb(null, ['test.com']))
+      const proxy = new WechatAuthProxy('appId', 'appSecret')
       expect(proxy).to.be.instanceof(WechatAuthProxy)
     })
 
     it('should throw error when required param is not present', () => {
-      expect(() => new WechatAuthProxy('', 'appSecret', 'http://test.com/callback', ['test.com'])).to.throw('appId is required')
+      expect(() => new WechatAuthProxy('', 'appSecret')).to.throw('appId is required')
     })
   })
 
@@ -93,6 +93,7 @@ describe('WechatAuthProxy', function () {
 
     it('should redirect to wechat authorize URI', function (done) {
       const ctx = {
+        href: 'http://test.com/callback',
         query: {
           appId: 'appId',
           redirectUri: 'http://other.com/callback',
@@ -123,6 +124,7 @@ describe('WechatAuthProxy', function () {
 
     it('should store redirect uri to session', function (done) {
       const ctx = {
+        href: 'http://test.com/callback',
         query: {
           appId: 'appId',
           redirectUri: 'http://other.com/callback',
