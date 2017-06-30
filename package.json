@@ -2,7 +2,7 @@
   "name": "wechat-auth-proxy",
   "version": "0.0.1",
   "description": "wechat oauth proxy",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
     "test": "istanbul cover _mocha -- -R spec 'test/**/*.spec.js'"
   },
