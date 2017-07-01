@@ -7,7 +7,7 @@ const assert = require('assert')
 const _ = require('lodash')
 
 class WechatAuthProxy {
-  constructor(appId, appSecret, getAccessToken, saveAccessToken, options = {}) {
+  constructor(appId, appSecret, options = {}) {
     assert(appId, 'appId is required')
     assert(appSecret, 'appSecret is required')
     this._appId = appId
@@ -26,7 +26,7 @@ class WechatAuthProxy {
     const prefix = options.prefix ? options.prefix : ''
     this._authUrl = path.join('/', prefix, '/wechatauth')
     this._callbackUrl = path.join('/', prefix, '/wechatauth/callback')
-    this._oauth = new WechatOAuth(appId, appSecret, getAccessToken, saveAccessToken)
+    this._oauth = new WechatOAuth(appId, appSecret, options.getAccessToken, options.saveAccessToken)
   }
   middlewarify(){
     return async (ctx, next) => {

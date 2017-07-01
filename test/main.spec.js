@@ -60,7 +60,7 @@ describe('WechatAuthProxy', function () {
 
 
   describe('#auth()', function () {
-    const proxy = new WechatAuthProxy('appId', 'appSecret', undefined, undefined, {allowedHosts:['other.com']})
+    const proxy = new WechatAuthProxy('appId', 'appSecret', {allowedHosts:['other.com']})
 
     it('should reply 400 "Invalid appId." when appId is invalid', function (done) {
       const ctx = {
@@ -144,7 +144,7 @@ describe('WechatAuthProxy', function () {
   })
 
   describe('#callback()', function () {
-    const proxy = new WechatAuthProxy('appId', 'appSecret', null, null, {allowedHosts: ['other.com']})
+    const proxy = new WechatAuthProxy('appId', 'appSecret', {allowedHosts: ['other.com']})
 
     it('should reply redirect to failureRedirect url when code is not available or invalid', function (done) {
       const ctx = {
