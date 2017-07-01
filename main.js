@@ -51,6 +51,9 @@ class WechatAuthProxy {
     }
     const successRedirect = query.successRedirect || query.redirectUri
     const failureRedirect = query.failureRedirect || successRedirect
+    if(!successRedirect) {
+      return ctx.throw(400, 'Redirect URI is required.')
+    }
     let allowed = false
     try {
       allowed = await this._isRedirectUriAllowed(successRedirect, failureRedirect)
