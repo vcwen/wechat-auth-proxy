@@ -37,10 +37,10 @@ class WechatAuthProxy {
           case this._callbackUrl:
             return this.callback(ctx)
           default:
-            next()
+            await next()
         }
       } else {
-        next()
+        await next()
       }
     }
   }
