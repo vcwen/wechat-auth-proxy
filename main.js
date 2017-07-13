@@ -56,9 +56,8 @@ class WechatAuthProxy {
     }
     let allowed = false
     try {
-      allowed = await this._isRedirectUriAllowed(successRedirect, failureRedirect)
+      allowed = await this._isRedirectUriAllowed(ctx, successRedirect, failureRedirect)
     } catch(err) {
-      console.log(err)
       return ctx.throw(500, err.message)
     }
     if (!allowed) {
@@ -105,8 +104,9 @@ class WechatAuthProxy {
       return ctx.redirect(ctx.session.failureRedirect)
     }
   }
-  async _isRedirectUriAllowed(...uris) {
+  async _isRedirectUriAllowed(ctx, ...uris) {
     const allowedHosts = await this._getAllowedHosts()
+    allowedHosts.push(ctx.hostname)
     const allowed = uris.every((uri) => {
       const hostname = url.parse(uri).hostname
       return allowedHosts.includes(hostname)

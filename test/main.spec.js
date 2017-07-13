@@ -91,6 +91,22 @@ describe('WechatAuthProxy', function () {
       proxy.auth(ctx)
     })
 
+    it('should redirect to uri with the same hostname with the auth server', function (done) {
+      const ctx = {
+        query: {
+          appId: 'appId',
+          redirectUri: 'http://sometest.com/callback',
+          hostname: 'sometest.com'
+        },
+        throw(statusCode, msg) {
+          expect(statusCode).to.equal(400)
+          expect(msg).to.equal('Invliad redirect URI.')
+          done()
+        }
+      }
+      proxy.auth(ctx)
+    })
+
     it('should redirect to wechat authorize URI', function (done) {
       const ctx = {
         href: 'http://test.com/callback',
