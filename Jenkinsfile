@@ -8,7 +8,9 @@ pipeline {
   stages {
     stage('install') {
       steps {
-        sh 'node --version'
+        sh '''node --version
+yarn global add jest
+npm test'''
       }
     }
   }
