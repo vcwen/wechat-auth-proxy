@@ -8,7 +8,7 @@ pipeline {
   stages {
     stage('install') {
       steps {
-        sh 'ls'
+        sh 'node --version'
       }
     }
   }
