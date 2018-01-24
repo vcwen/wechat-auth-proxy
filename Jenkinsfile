@@ -10,8 +10,7 @@ pipeline {
       steps {
         sh '''node --version
 yarn config set registry https://registry.npm.taobao.org
-yarn install
-yarn test'''
+ls -hl .'''
       }
     }
   }
