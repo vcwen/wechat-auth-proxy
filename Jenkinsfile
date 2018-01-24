@@ -14,4 +14,7 @@ npm test'''
       }
     }
   }
+  environment {
+    HOME = '.'
+  }
 }
