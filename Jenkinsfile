@@ -9,8 +9,12 @@ pipeline {
     stage('install') {
       steps {
         sh '''node --version
-yarn config set registry https://registry.npm.taobao.org
-ls -hl .'''
+yarn'''
+      }
+    }
+    stage('Test') {
+      steps {
+        sh 'yarn test'
       }
     }
   }
