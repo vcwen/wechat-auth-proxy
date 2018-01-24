@@ -10,8 +10,8 @@ pipeline {
       steps {
         sh '''node --version
 yarn config set registry https://registry.npm.taobao.org
-yarn global add jest
-npm test'''
+yarn install
+yarn test'''
       }
     }
   }
