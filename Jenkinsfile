@@ -16,6 +16,12 @@ pipeline {
           }
         }
         stage('node.js 9') {
+          agent {
+            docker {
+              image 'node:9'
+            }
+            
+          }
           steps {
             sh '''yarn install
 yarn test'''
