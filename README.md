@@ -1,5 +1,3 @@
 # wechat-auth-proxy
 
-
-test
-test
+try again
