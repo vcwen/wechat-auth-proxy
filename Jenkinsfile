@@ -3,9 +3,7 @@ node {
     pipeline {
 
         stage('test') {
-          steps {
             sh 'echo success'
-          }
       }
     }
     
