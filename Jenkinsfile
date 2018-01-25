@@ -30,12 +30,11 @@ yarn test'''
       }
     }
     stage('mongodb') {
-      steps {
+
         docker.image('mongodb:3.4').withRun() { c ->
           sh 'yarn install'
           sh 'yarn test'
         }
-      }
     }
     stage('clear') {
       steps {
