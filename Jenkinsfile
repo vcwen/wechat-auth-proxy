@@ -1,7 +1,7 @@
 pipeline {
   agent any
   tools {
-    mongodb
+    mongodb 3.4.0
   }
   stages {
     stage('Node.js 8') {
