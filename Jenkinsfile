@@ -1,7 +1,7 @@
 pipeline {
   agent any
   tools {
-        mongodb 'linux_x86_64-3.4.0' 
+        org.jenkinsci.plugins.mongodb.MongoDBInstallation 'linux_x86_64-3.4.0' 
     }
   stages {
     stage('Node.js 8') {
