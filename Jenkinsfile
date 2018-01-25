@@ -31,7 +31,10 @@ yarn test'''
     }
     stage('mongodb') {
       steps {
-        sh 'mongod --quiet --fork --noauth --pidfilepath ${WORKSPACE}/mongopid --logpath ${WORKSPACE}/data/log --dbpath ${WORKSPACE}/data/db'
+        docker.image('mongodb:3.4').withRun() { c ->
+          sh 'yarn install'
+          sh 'yarn test'
+        }
       }
     }
     stage('clear') {
