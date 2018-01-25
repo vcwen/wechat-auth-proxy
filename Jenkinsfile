@@ -1,5 +1,8 @@
 pipeline {
   agent any
+  tools {
+    mongodb
+  }
   stages {
     stage('Node.js 8') {
       parallel {
