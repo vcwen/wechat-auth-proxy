@@ -29,13 +29,16 @@ yarn test'''
         }
       }
     }
-    stage('mongodb') {
-
+    
         docker.image('mongodb:3.4').withRun() { c ->
-          sh 'yarn install'
-          sh 'yarn test'
+          stage('mongodb') {
+            steps {
+              sh 'yarn install'
+              sh 'yarn test'
+            }
+          }
         }
-    }
+    
     stage('clear') {
       steps {
         sh 'echo success'
