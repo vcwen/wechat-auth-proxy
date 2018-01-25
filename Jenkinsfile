@@ -1,5 +1,6 @@
 pipeline {
   agent none
+  docker.image('mongodb:3.4').withRun() { c ->
   stages {
     stage('Node.js 8') {
       parallel {
@@ -30,19 +31,20 @@ yarn test'''
       }
     }
     
-        docker.image('mongodb:3.4').withRun() { c ->
+       
           stage('mongodb') {
             steps {
               sh 'yarn install'
               sh 'yarn test'
             }
           }
-        }
+        
     
     stage('clear') {
       steps {
         sh 'echo success'
       }
     }
+  }
   }
 }
