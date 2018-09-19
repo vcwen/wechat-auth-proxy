@@ -1,5 +1,5 @@
-import * as WechatOAuth from 'co-wechat-oauth'
-import {isEmpty} from 'lodash'
+import WechatOAuth from 'co-wechat-oauth'
+import { isEmpty } from 'lodash'
 import { ISecurityChecker, MuteSecurityChecker, SimpleSecurityChecker } from './SecurityChecker'
 import { ITokenStore } from './TokenStore'
 

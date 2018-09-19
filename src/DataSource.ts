@@ -1,23 +1,23 @@
-import {List, Map} from 'immutable'
-import {struct} from 'superstruct'
+import { List, Map } from 'immutable'
+import { struct } from 'superstruct'
 import { MemoryTokenStore } from './TokenStore'
 import { WechatAccount } from './WechatAccount'
 
 export interface IDataSource {
-  getWechatAccounts(): Promise<List<{[prop: string]: any}>>
+  getWechatAccounts(): Promise<List<{ [prop: string]: any }>>
   getWechatAccount(appId: string): Promise<WechatAccount | undefined>
 }
 
 export class SimpleDataSource implements IDataSource {
   private accounts: Map<string, WechatAccount>
-  constructor(data: {[prop: string]: {name?: string, appId: string, appSecret: string, whitelist: string[]}}) {
+  constructor(data: { [prop: string]: { name?: string; appId: string; appSecret: string; whitelist: string[] } }) {
     const AccountCheck = struct({
       name: 'string?',
       appId: 'string',
       appSecret: 'string',
       whitelist: ['string?']
     })
-    const accts = {} as {[key: string]: WechatAccount}
+    const accts = {} as { [key: string]: WechatAccount }
     const tokenStore = new MemoryTokenStore()
     for (const key in data) {
       if (data.hasOwnProperty(key)) {

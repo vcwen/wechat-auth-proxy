@@ -1,12 +1,12 @@
 // const debug = require('debug')('proxy')
-import * as Koa from 'koa'
-import * as Router from 'koa-router'
-import * as path from 'path'
-import {URL} from 'url'
-import * as url from 'url'
+import Koa from 'koa'
+import Router from 'koa-router'
+import path from 'path'
+import { URL } from 'url'
+import url from 'url'
 import { IDataSource } from './DataSource'
-import {ISecurityChecker} from './SecurityChecker'
-import {ITokenStore} from './TokenStore'
+import { ISecurityChecker } from './SecurityChecker'
+import { ITokenStore } from './TokenStore'
 
 export interface IAuthProxyOptions {
   authUrl: string
@@ -56,8 +56,13 @@ export class WechatAuthProxy {
 
     ctx.session.redirectUri = redirectUri
     ctx.session.lang = query.lang || 'zh_CN'
-    ctx.redirect(account.wechatOAuth.getAuthorizeURL(url.resolve(ctx.origin,
-      path.join(this.prefix, '/wechat/callback')), state, scope))
+    ctx.redirect(
+      account.wechatOAuth.getAuthorizeURL(
+        url.resolve(ctx.origin, path.join(this.prefix, '/wechat/callback')),
+        state,
+        scope
+      )
+    )
   }
   public async callback(ctx: Koa.Context) {
     if (!ctx.session) {
@@ -82,7 +87,7 @@ export class WechatAuthProxy {
       const accessToken = await account.wechatOAuth.getAccessToken(ctx.query.code)
       const data = accessToken.data
       const openId = data.openid
-      const query =  {
+      const query = {
         openid: openId,
         scope: data.scope
       }
