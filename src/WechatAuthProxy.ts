@@ -2,6 +2,7 @@
 import Koa from 'koa'
 import Router from 'koa-router'
 import path from 'path'
+import qs from 'querystring'
 import { URL } from 'url'
 import url from 'url'
 import { IDataSource } from './DataSource'
@@ -32,9 +33,6 @@ export class WechatAuthProxy {
     return router
   }
   public async auth(ctx: Koa.Context) {
-    if (!ctx.session) {
-      throw new Error('Session is required.')
-    }
     const query = ctx.query
     const appId = query.appId
     if (!appId) {
@@ -53,27 +51,38 @@ export class WechatAuthProxy {
     }
     const scope = query.scope || 'snsapi_base'
     const state = query.state || 'proxy'
+    const callbackQuery: any = { appId }
+    if (ctx.session) {
+      ctx.session.redirectUri = redirectUri
+      ctx.session.lang = query.lang || 'zh_CN'
+    } else {
+      callbackQuery.redirectUri = redirectUri
+      callbackQuery.lang = query.lang || 'zh_CN'
+    }
 
-    ctx.session.redirectUri = redirectUri
-    ctx.session.lang = query.lang || 'zh_CN'
-    ctx.redirect(
-      account.wechatOAuth.getAuthorizeURL(
-        url.resolve(ctx.origin, path.join(this.prefix, '/wechat/callback')),
-        state,
-        scope
-      )
+    const callbackUri = url.resolve(
+      ctx.origin,
+      path.join(this.prefix, '/wechat/callback' + qs.stringify(callbackQuery))
     )
+
+    ctx.redirect(account.wechatOAuth.getAuthorizeURL(callbackUri, state, scope))
   }
   public async callback(ctx: Koa.Context) {
-    if (!ctx.session) {
-      throw new TypeError('Session is required.')
+    let redirectUri: URL
+    let lang: string
+    if (ctx.session) {
+      redirectUri = new URL(ctx.session.redirectUri)
+      lang = ctx.session.lang
+    } else {
+      redirectUri = new URL(ctx.query.redirectUri)
+      lang = ctx.query.lang
     }
-    const redirectUrl = new URL(ctx.session.redirectUri)
-    redirectUrl.searchParams.append('state', ctx.query.state)
+    redirectUri.searchParams.append('state', ctx.query.state)
+
     ctx.status = 301
     if (!ctx.query.code || ctx.query.code === 'authdeny') {
-      redirectUrl.searchParams.append('error', 'authdeny')
-      return ctx.redirect(redirectUrl.toString())
+      redirectUri.searchParams.append('error', 'authdeny')
+      return ctx.redirect(redirectUri.toString())
     }
     const appId = ctx.query.appId
     if (!appId) {
@@ -92,7 +101,6 @@ export class WechatAuthProxy {
         scope: data.scope
       }
       if (data.scope === 'snsapi_userinfo') {
-        const lang = ctx.session.lang
         const options = {
           openid: openId,
           lang
@@ -102,14 +110,14 @@ export class WechatAuthProxy {
       }
       for (const key in query) {
         if (query.hasOwnProperty(key)) {
-          redirectUrl.searchParams.append(key, query[key])
+          redirectUri.searchParams.append(key, query[key])
         }
       }
-      ctx.redirect(redirectUrl.toString())
+      ctx.redirect(redirectUri.toString())
     } catch (err) {
       const msg = err instanceof Error ? err.message : err
-      redirectUrl.searchParams.append('error', msg)
-      ctx.redirect(redirectUrl.toString())
+      redirectUri.searchParams.append('error', msg)
+      ctx.redirect(redirectUri.toString())
     }
   }
 }

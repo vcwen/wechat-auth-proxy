@@ -1,9 +1,9 @@
 {
   "name": "wechat-auth-proxy",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "wechat oauth proxy",
-  "main": "dist/main.js",
-  "types": "./dist/main.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest"
   },
@@ -60,11 +60,13 @@
     "@types/koa": "^2.0.39",
     "@types/koa-router": "^7.0.27",
     "@types/koa-session": "^3.0.5",
+    "@types/lodash": "^4.14.116",
     "@types/node": "^8.0.34",
+    "@types/superstruct": "^0.5.0",
     "jest": "^22.0.4",
     "koa": "^2.3.0",
     "ts-jest": "^22.0.0",
     "ts-node": "^4.1.0",
-    "typescript": "^2.6.2"
+    "typescript": "2.9"
   }
 }
