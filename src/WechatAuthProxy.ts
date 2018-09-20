@@ -62,7 +62,7 @@ export class WechatAuthProxy {
 
     const callbackUri = url.resolve(
       ctx.origin,
-      path.join(this.prefix, '/wechat/callback' + qs.stringify(callbackQuery))
+      path.join(this.prefix, '/wechat/callback?' + qs.stringify(callbackQuery))
     )
 
     ctx.redirect(account.wechatOAuth.getAuthorizeURL(callbackUri, state, scope))
