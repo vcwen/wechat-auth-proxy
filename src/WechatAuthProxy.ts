@@ -17,8 +17,9 @@ export interface IAuthProxyOptions {
 }
 
 export class WechatAuthProxy {
+  public prefix: string = ''
+  public baseUrl!: string
   private dataSource: IDataSource
-  private prefix: string = ''
   constructor(dataSource: IDataSource) {
     this.dataSource = dataSource
   }
@@ -60,10 +61,8 @@ export class WechatAuthProxy {
       callbackQuery.lang = query.lang || 'zh_CN'
     }
 
-    const callbackUri = url.resolve(
-      ctx.origin,
-      path.join(this.prefix, '/wechat/callback?' + qs.stringify(callbackQuery))
-    )
+    const baseUrl = this.baseUrl ? this.baseUrl : ctx.originalUrl
+    const callbackUri = url.resolve(baseUrl, path.join(this.prefix, '/wechat/callback?' + qs.stringify(callbackQuery)))
 
     ctx.redirect(account.wechatOAuth.getAuthorizeURL(callbackUri, state, scope))
   }
@@ -97,8 +96,7 @@ export class WechatAuthProxy {
       const data = accessToken.data
       const openId = data.openid
       const query = {
-        openid: openId,
-        scope: data.scope
+        openid: openId
       }
       if (data.scope === 'snsapi_userinfo') {
         const options = {
